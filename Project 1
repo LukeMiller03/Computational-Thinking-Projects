@@ -1,0 +1,100 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Sep 11 09:52:08 2024
+
+
+"""
+
+print(" ")
+income = float(input("Please input your annual income in dollars for 2024: "))
+
+print(" ")
+mfjstatus = input("If you are married and filing jointly, type \'Yes\'. Otherwise, type \'No\': ")
+
+
+if mfjstatus == str("Yes"):
+    mfjstatus = bool(True)
+else:
+    mfjstatus = bool(False)
+
+if mfjstatus == True:
+    print(" ")
+    mfj = float(input("Please enter your partner's annual income in dollars for 2024: "))
+    income = mfj + income
+    
+    print(" ")
+    print("----------------------RESULTS----------------------")
+    print("Your current income for 2024 is:", income, "dollars.")
+    print("You are filing jointly with a married partner.")
+    income = round(income, 2)
+else:        
+    print(" ")
+    print("----------------------RESULTS----------------------")
+    print("Your current income for 2024 is:", income, "dollars.")
+    print("You are filing individually.")
+    income = round(income, 2)
+        
+if mfjstatus == True:
+    if income <= 12420:
+        state_tax = float(income * .044)
+    elif income <= 62100:
+        state_tax = float(546.48 + ((income - 12420) * .0482))
+    else:
+        state_tax = float(3481.056 + ((income - 62100) * .057))
+else:
+    if income <= 6210:
+        state_tax = float(income * .044)
+    elif income <= 31050:
+        state_tax = float(273.24 + ((income - 6210) * .0482))
+    else:
+        state_tax = float(1470.528 + ((income - 31050) * .057))
+        
+state_tax = round(state_tax, 2)
+print("Your current state tax is:", state_tax, "dollars.")
+
+if mfjstatus == True:
+    if income - 29200 <= 0:
+        federal_tax = 0
+    else:
+        if income <= 23200:
+            federal_tax = float(income * .1)
+        elif income <= 94300:
+            federal_tax = float(2320 + ((income - 23200) * .12))
+        elif income <= 201050:
+            federal_tax = float(10852 + ((income - 94300) * .22))
+        elif income <= 383900:
+            federal_tax = float(34337 + ((income - 201050) * .24))
+        elif income <= 487450:
+            federal_tax = float(78221 + ((income - 383900)) * .32)
+        elif income <= 111357:
+            federal_tax = float(111357 + ((income - 487450)) * .35)
+        else:
+            federal_tax = float(19699.5 + ((income - 731200)) * .37)
+else:
+    if income - 14600 <= 0:
+        federal_tax = 0
+    else:
+        if income <= 11600:
+            federal_tax = float(income * .1)
+        elif income <= 47150:
+            federal_tax = float(1160 + ((income - 11600) * .12))
+        elif income <= 100525:
+            federal_tax = float(5426 + ((income - 47150) * .22))
+        elif income <= 191950:
+            federal_tax = float(17168.5 + ((income - 100525) * .24))
+        elif income <= 243725:
+            federal_tax = float(39110.5 + ((income - 191950)) * .32)
+        elif income <= 609350:
+            federal_tax = float(55678.5 + ((income - 243725)) * .35)
+        else:
+            federal_tax = float(183647.25 + ((income - 609350)) * .37)
+            
+federal_tax = round(federal_tax, 2)
+print("Your current federal tax is:", federal_tax, "dollars.")
+
+total_tax = state_tax + federal_tax
+total_tax = round(total_tax, 2)
+print("You will be paying:", total_tax, "dollars in taxes from your income overall this year.")
+
+        
+ 
