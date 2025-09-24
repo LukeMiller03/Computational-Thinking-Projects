@@ -1,0 +1,93 @@
+# -*- coding: utf-8 -*-
+"""
+
+
+"""
+
+import GLA3DelayMod as gdm
+
+if __name__ == "__main__":
+    
+    headsize = None
+    
+    while True:
+        try:
+        
+            delayval = int(input("\nHow many months do you wish to look back? Enter 1, 2 or 3: "))
+            if delayval not in {1,2,3}:
+                raise Exception("Enter a value equal to 1, 2 or 3.")
+            else:
+                DelaySet = gdm.Delay(delayval)
+                print(DelaySet)
+                DelaySet.print_stats()
+                break
+        
+        
+        except Exception as error:
+            print(error)
+
+    while True:
+        try:
+            entry = input("\n\nPlease select your option:\nType 'o' for origin\nType 'd' for destination\nType 'a' for airline\nType 'l' for list options\nPress Enter to exit and print stats: ")
+            if entry == 'o':
+                orig = input("\nOrigin: ")
+                DelaySet.input_origin(orig)
+                print(DelaySet)
+                DelaySet.print_stats()
+            elif entry == 'd':
+                dest = input("\nDestination: ")
+                DelaySet.input_destination(dest)
+                print(DelaySet)
+                DelaySet.print_stats()
+            elif entry == 'a':
+                airl = input("\nAirline: ")
+                DelaySet.input_airline(airl)
+                print(DelaySet)
+                DelaySet.print_stats()
+            elif entry == 'l':
+                entry = input("\nType 'h' to change head/sample size\nType 'm' to change month scope\nType 'd' to view the dataframe\nType 'l' to view all options for origin, destination and airline\nPress Enter to go back: ")
+                if entry == 'h':
+                    headsize = int(input("\nInput a sample/head size (intergers only): "))
+                elif entry == 'm':
+                    delayval = input("\nWARNING: REDEFINING MONTH SCOPE WILL RESET ORIGIN, DEST AND AIRLINE. Press Enter to go back to main menu.\nHow many months do you wish to look back? Enter 1, 2 or 3: ")
+                    if delayval == '':
+                        print(DelaySet)
+                        DelaySet.print_stats()
+                        continue
+                    delayval = int(delayval)
+                    if delayval not in {1,2,3}:    
+                        raise Exception("Invalid entry. Only enter a value equal to 1, 2 or 3.")
+                    else:
+                        DelaySet = gdm.Delay(delayval)
+                        print(DelaySet)
+                        DelaySet.print_stats()
+                elif entry == 'd':
+                    print(DelaySet.df_flight)
+                    continue
+                elif entry == 'l':
+                    originlist = list(set(DelaySet.df_flight['Origin'].tolist()))
+                    destinationlist = list(set(DelaySet.df_flight['Destination'].tolist()))
+                    airlinelist = list(set(DelaySet.df_flight['Airline'].tolist()))
+                    print("Origins: ", originlist)
+                    print("Destination: ", destinationlist)
+                    print("Airline: ", airlinelist)
+                    continue
+                elif entry == '':
+                    print(DelaySet)
+                    DelaySet.print_stats()
+                    continue
+                else:
+                    raise Exception("Invalid entry. Only h, m, d, l, or Enter" )
+            elif entry == '':
+                DelaySet.count_return()
+                
+                if headsize != None:                    
+                    DelaySet.plot_hist(headsize)
+                else:
+                    DelaySet.plot_hist()
+                    
+            else:
+                raise Exception("Invalid entry. Only enter o, d, a, l, or Enter.")
+                
+        except Exception as error:
+            print(error)
