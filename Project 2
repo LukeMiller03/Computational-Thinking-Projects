@@ -1,0 +1,397 @@
+# -*- coding: utf-8 -*-
+
+"""
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+
+"""
+Function 0: load_data
+This function loads the data file stations.csv as a DataFrame using Pandas, 
+performs some data cleansing and returns the DataFrame. 
+
+Exclude rows with LNG and HY fuel types, missing (NAN) year, and year 2022. 
+Note that that this function should process the original data file as provided here 
+and all data processing should happen inside this function
+"""
+
+# Define load_data() below:
+
+"""
+Df is the dataframe of the table 
+
+Df is made global so anything in the function affects everything Df is called for
+Droplist is an empty list that's populated w/ the indexes of every item in df to be dropped
+dfnull makes a df of true/false based on if the data in every position is NaN.
+
+The for loop goes through every index and adds the index into the append list if:
+    1. Fuel type is LNG, HY
+    2. Year is 2022
+    3. Year value is NaN (dfnull Year value is True)
+    
+The droplist is made into a set, then back to a list to remove duplicates.
+Finally, the df is redefined as itself after dropping every index in the droplist.
+
+
+"""    
+
+def load_data():
+    global df
+    
+    df = pd.read_csv("stations.csv")
+    droplist = []
+    dfnull = df.isnull()
+    
+    for i in range(df.shape[0]):
+        print("Loading Data: ", i, "of", df.shape[0])
+        if df["Fuel Type Code"][i] in ('LNG', 'HY') or df["Year"][i] == 2022:
+            droplist.append(i)
+        if dfnull["Year"][i] == True:
+            droplist.append(i)
+
+    droplist = set(droplist)
+    droplist = list(droplist)    
+       
+    df = df.drop(labels=droplist, axis=0)
+    return df
+
+# Load the data using load_data function
+# The dataframe should contain 60349 rows and 20 columns if loaded correctly
+
+df = load_data()
+
+"""
+Note: In the following functions, assume that df is similar to the dataframe 
+loaded by load_data() but possibly contains a subset of its rows 
+(e.g., filtered based on a condition before the function call).
+
+Implement the data analysis steps to produce the data required for plotting and 
+visualize the results in each function. Do not hardcode the values for plotting. 
+
+All values must come from appropriate dataframe methods applied on the provided 
+dataframe df and should be generalizable to the cases beyond the given examples.
+"""
+
+"""
+Function 1: plot_pie_by_column(df, column, title)
+
+This function receives a dataframe df (similar to the full dataframe but not 
+necessarily the same), a column name and a title for the plot. 
+
+It then counts the number of stations for each category in df[column] and 
+produces a pie chart illustrating the distribution of these numbers.
+
+Define the function below.
+"""
+
+"""
+The function defines dfA from the inputted dataframe argument, then builds the pie chart of counts
+based on the column inputted. If there is a filterer and filter value, you can specify in what column you're looking for what value.
+
+This is done in the State == IA example, where the filter category is 'State' and the desired item is 'IA'
+
+Regardless, it then returns and prints a pie chart with counts of each of the values from the desired dataframe column.
+
+-Bethany
+
+UPDATE: 11/15/2024
+
+THE WAY I DID THIS WAS NOT OPTIMAL.
+I realize that the question asks for an input that's a different DF based on what the question is asking.
+Thus, the function is much more streamlined based on inputs, no 'if/else' statements
+
+This is the ideal form of the function
+
+-Bethany
+"""
+
+def plot_pie_by_column(dataframe, column, title):
+
+    dataframe = dataframe[column].value_counts()    
+
+    plt.figure(figsize=(8,8))
+    plt.pie(dataframe, labels = dataframe.index, autopct='%1.1f%%')
+    plt.title(title)
+    plt.show()
+
+# Plots based on Function 1
+# Produce the following plots using plot_pie_by_column defined above by 
+# passing appropriate dataframes, columns and titles.
+
+# Fuel type distribution across all stations:    
+
+plot_pie_by_column(df, "Fuel Type Code", "Fuel type distribution across all stations")
+
+# Fuel type distribution across stations in Iowa:
+    
+df1 = df[df['State'] == 'IA']
+
+plot_pie_by_column(df1, "Fuel Type Code", "Fuel type distribution across stations in Iowa")
+
+# Distribution of stations by access code (public or private):
+
+plot_pie_by_column(df, "Access Code", "Distribution of stations by access code")
+
+"""
+Function 2: plot_station_counts(df, column, title, top_n = 10)
+
+This function receives a dataframe df (similar to the full dataframe but not 
+necessarily the same), a column name and a title for the plot. 
+
+It processes the data as in plot_pie_by_column, but instead of producing a pie chart, 
+produces a bar plot illustrating the actual counts. 
+
+The optional parameter top_n determines the maximum number of categories to display. 
+Note that if there are fewer than top_n categories in df[column], your function should 
+display up to that many categories.
+
+Define the function below.
+"""
+
+"""
+Okay, this one really kicked my butt.
+It took me forever to figure out that the notes we have ask of us to take pandas series/databases 
+and apply them as matplotlib inputs. That's really what threw me for a loop, here.
+
+The thing that I ultimately overcame was two major things:
+    1) I had to reset the indexes after finding a value count
+     - The .index method didn't work whatsoever. That's what REALLY drove me insane
+    2) The bar function required an iloc to determine the values of each x and y
+     - I had all kinds of issues involving incorrect data types (str, tuple, series, etc...)
+    
+Nontheless, I managed to get it to work after brute-forcing it. I wanted to go to a professor,
+but this is good enough I suppose. Looks close enough to the project doc's outputs.
+
+Same realizations applied to the functions above and below, just to make it all look nice.
+
+-Bethany
+
+"""
+
+def plot_station_counts(dataframe, column, title, top_n = 10):
+    
+    dataframe = dataframe[[column]].value_counts()
+    dataframe = dataframe.head(top_n)
+    dataframe = dataframe.reset_index()
+
+    plt.figure(figsize=(10,6))
+    plt.ylabel("Count of Location")
+    plt.xticks(rotation=45)
+    plt.title(title)
+    plt.bar(dataframe.iloc[:,0], dataframe.iloc[:,1])
+    plt.show()
+    
+# Plots based on Function 2
+# Produce the following plots using plot_station_counts defined above 
+# by passing appropriate dataframes, columns and titles.
+
+# Total number of fuel stations by US states (excluding California):
+
+df2 = df.loc[(df['State'] != 'CA') & (df['Country'] == 'US')]
+
+plot_station_counts(df2, 'State', 'Total number of fuel stations by US states (excluding California)')
+
+# Number of E85 stations per state/province (across US and Canada):
+    
+df3 = df.loc[df['Fuel Type Code'] == 'E85']
+
+plot_station_counts(df3, 'State', 'Number of E85 stations per state/province (across US and Canada)')
+
+# Total number of fuel stations for each city in Iowa:
+
+df4 = df.loc[df['State'] == 'IA']
+plot_station_counts(df4, 'City', 'Total number of fuel stations for each city in Iowa')
+
+# Number of fuel stations by facility type:
+    
+plot_station_counts(df, 'Facility Type', 'Number of fuel stations by facility type')
+
+
+"""
+Function 3: plot_station_counts_per_year(df, title)
+
+This function receives a dataframe df (similar to the full dataframe 
+but not necessarily the same) and a title for the plot. 
+
+It then counts the total number of stations opened in each year in the 
+provided df and produces a line plot.
+
+Define the function below
+"""
+
+"""
+Similar idea to what's above, but different slightly.
+Similar graph types, after all. Should be smooth sailing from here I hope!
+
+-Bethany
+"""
+
+# Define Function 3 below:
+    
+def plot_station_counts_per_year(dataframe, title):
+    
+    dataframe = dataframe[['Year']].value_counts()
+    dataframe = dataframe.reset_index()
+    dataframe = dataframe.sort_values(by = 'Year', ascending = True)
+    
+    plt.figure(figsize=(10,6))
+    plt.ylabel("Count of Location")
+    plt.xlabel("Year")
+    plt.title(title)
+    plt.plot(dataframe.iloc[:,0], dataframe.iloc[:,1])
+    plt.show()
+    
+# Plots based on Function 3
+# Produce the following plot using plot_station_counts_per_year 
+# defined above by passing an appropriate dataframe and a title.
+
+# Total number of new fuel stations (across all fuel stations):
+
+plot_station_counts_per_year(df, 'Total number of new fuel stations (across all fuel stations)')
+
+"""
+Function 4: plot_station_counts_per_year_fuel_type(df, title, fuel_types)
+
+This function is similar to plot_station_counts_per_year but instead of 
+counting the total number of new stations per year, it counts the number of new 
+stations per year for each fuel type given in the list fuel_types. 
+
+It then produces a plot with a separate line and legend for each fuel type.
+
+Define the function below.
+"""
+
+# Define Function 4 below:
+def plot_station_counts_per_year_fuel_type(dataframe, title, fuel_types):
+    
+    plt.figure(figsize=(10,6))
+    plt.ylabel("Count of Location")
+    plt.xlabel("Year")
+    plt.title(title)
+    
+    outerdf = dataframe
+    
+    dfdict = {}
+    
+    for item in fuel_types:
+        dataframe = outerdf
+        dataframe = dataframe[dataframe['Fuel Type Code'] == item]
+        dataframe = dataframe[['Year']].value_counts()
+        dataframe = dataframe.reset_index()
+        dataframe = dataframe.sort_values(by = 'Year', ascending = True)
+        dfdict[item] = dataframe
+    
+    for key in dfdict:
+        plt.plot(dfdict[key].iloc[:,0], dfdict[key].iloc[:,1], label=key)
+        plt.legend()
+
+    plt.show()
+    
+# Plots based on Function 4
+# Produce the following plots using plot_station_counts_per_year_fuel_type 
+# defined above by passing appropriate dataframes, titles and fuel types
+
+# Number of new Electric & E85 fuel stations in Iowa:
+
+df5 = df.loc[df['State'] == 'IA']
+plot_station_counts_per_year_fuel_type(df5, 'Number of new Electric & E85 fuel stations in Iowa', ['ELEC','E85'])
+
+# Number of new Electric, Biodiesel and E85 fuel stations in Minnesota:
+
+df6 = df.loc[df['State'] == 'MN']
+plot_station_counts_per_year_fuel_type(df6, 'Number of new Electric, Biodiesel and E85 fuel stations in Minnesota', ['ELEC', 'BD', 'E85'])
+
+
+"""
+Function 5: plot_map_state(df, state_to_highlight)
+
+This function receives a dataframe df and a state/province code. 
+It then produces a scatter plot of longitude and latitude illustrating 
+the location of fuel stations on the map. 
+
+Fuel stations are color coded by country (blue for the US and red for Canada). 
+In addition, we wish to highlight a specific state/province using a different 
+color (e.g., cyan).
+
+Note: For simplicity, you may assume that df is the full dataset in the 
+following two functions. You may need to adjust the axis limits to appropriate 
+longitude and magnitude values so that your function displays only the part of 
+the map displayed in the provided plot outputs.
+
+Define the function below
+"""
+
+# Define Function 5 below:
+def plot_map_state(dataframe, state_to_highlight):
+    
+    colors = ['Blue'] * dataframe.shape[0]
+    
+    for i in range(dataframe.shape[0]):  
+        if dataframe['Country'].iloc[i] == 'US':
+            if dataframe['State'].iloc[i] == state_to_highlight:
+                colors[i] = 'Cyan'
+            else:
+                colors[i] = 'Blue'
+        else:
+            colors[i] = 'Red'
+            
+    
+    plt.figure(facecolor = 'black')
+    plt.axes(facecolor = 'black', xlim = (-150, -50), ylim = (20,70))
+    
+    plt.scatter(dataframe[['Longitude']], dataframe[['Latitude']], c = colors, s = .25)
+    plt.show()
+    
+# Plots based on Function 5
+# Produce the following plots using plot_map_state defined above 
+# by passing appropriate dataframes and states.
+
+# Location of fuel stations on the map (highlighting Iowa):
+
+plot_map_state(df,'IA')
+
+# Location of fuel stations on the map (highlighting Texas):
+
+plot_map_state(df,'TX')
+
+"""
+Function 6: plot_map_fueltypes(df, fueltype_colors)
+This function is similar to plot_map_state  but instead of 
+coloring the stations by country/state, it receives a dictionary with some 
+fuel types as keys and their colors as values, and colors the stations accordingly. 
+
+The stations whose fuel type is not in the keys of fueltype_colors are colored by gray.
+
+Define the function below. 
+"""
+
+# Define Function 6 below:
+def plot_map_fueltypes(dataframe, fueltype_colors):
+    colors = ['gray'] * dataframe.shape[0]
+    
+    for i in range(dataframe.shape[0]):
+        for key in fueltype_colors:
+            if dataframe['Fuel Type Code'].iloc[i] == key:
+                colors[i] = fueltype_colors[key]
+    
+    plt.figure(facecolor = 'black')
+    plt.axes(facecolor = 'black', xlim = (-150, -50), ylim = (20,70))
+    
+    plt.scatter(dataframe[['Longitude']], dataframe[['Latitude']], c = colors, s = .25)
+    plt.show()
+    
+# Plots based on Function 6
+# Produce the following plots using plot_map_fueltypes defined above 
+# by passing appropriate dataframes and dictionaries for fuel type colors.
+
+# Location of fuel stations on the map (highlighting E85 (cyan), 
+# BD (red) and CNG (yellow)):
+
+fueldictA = {'E85':'cyan','BD':'red','CNG':'yellow'}
+plot_map_fueltypes(df, fueldictA)
+
+# Location of fuel stations on the map (highlighting Electric stations (cyan)):
+
+fueldictB = {'ELEC':'cyan'}
+plot_map_fueltypes(df, fueldictB)
