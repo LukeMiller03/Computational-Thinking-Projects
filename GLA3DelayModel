@@ -1,0 +1,193 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Nov 21 09:52:24 2024
+
+@author: 13195
+"""
+
+"""
+Created on Thu Oct 31 12:20:20 2024
+
+
+Changelog: 11/21/2024 (Luke) - Created file and majority of code! If anyone can make the bar chart into a histogram, let me know. Other than that, it should be good!
+           11/22/2024 (Luke) - Sample size functionality via the main menu and the headsize variable/function argument! See GLA3RunApp to see additions made to accomodate this.
+           12/2/2024 (Luke) - Made it so changing the origin, destination, and airport refreshes the selection without narrowing the search further.
+
+"""
+
+import pandas as pd
+import statistics
+import matplotlib.pyplot as plt
+
+class Delay:
+    
+    df_flight = pd.DataFrame()
+    origin = ""
+    destination = ""
+    airline = ""
+    
+    def __init__(self, timeframe):      
+
+        global tf
+        tf = timeframe
+
+        if timeframe == 1:
+            df1 = pd.read_csv("Aug24Delays.csv")
+            self.df_flight = df1
+        elif timeframe == 2:
+            df1 = pd.read_csv("Aug24Delays.csv")
+            df2 = pd.read_csv("July24Delays.csv")
+            df1 = pd.concat([df1,df2])
+            self.df_flight = df1
+        else:
+            df1 = pd.read_csv("Aug24Delays.csv")
+            df2 = pd.read_csv("July24Delays.csv")
+            df3 = pd.read_csv("June24Delays.csv")
+            df1 = pd.concat([df1,df2,df3])
+            self.df_flight = df1
+            
+        self.origin = "Any"
+        self.destination = "Any"
+        self.airline = "Any"
+            
+    def input_origin(self, origin):
+        
+        if self.origin != "Any":
+            if tf == 1:
+                df1 = pd.read_csv("Aug24Delays.csv")
+                self.df_flight = df1
+            elif tf == 2:
+                df1 = pd.read_csv("Aug24Delays.csv")
+                df2 = pd.read_csv("July24Delays.csv")
+                df1 = pd.concat([df1,df2])
+                self.df_flight = df1
+            else:
+                df1 = pd.read_csv("Aug24Delays.csv")
+                df2 = pd.read_csv("July24Delays.csv")
+                df3 = pd.read_csv("June24Delays.csv")
+                df1 = pd.concat([df1,df2,df3])
+                self.df_flight = df1
+                
+            if self.destination != "Any":
+                self.df_flight = self.df_flight[ self.df_flight['Destination'] == self.destination]
+            if self.airline != "Any":
+                self.df_flight = self.df_flight[ self.df_flight['Airline'] == self.airline]
+            self.origin = origin
+            self.df_flight = self.df_flight[ self.df_flight['Origin'] == self.origin]
+            
+        else:
+            self.origin = origin
+            self.df_flight = self.df_flight[ self.df_flight['Origin'] == self.origin]
+        
+    def input_destination(self, destination):
+        
+        if self.destination != "Any":
+            if tf == 1:
+                df1 = pd.read_csv("Aug24Delays.csv")
+                self.df_flight = df1
+            elif tf == 2:
+                df1 = pd.read_csv("Aug24Delays.csv")
+                df2 = pd.read_csv("July24Delays.csv")
+                df1 = pd.concat([df1,df2])
+                self.df_flight = df1
+            else:
+                df1 = pd.read_csv("Aug24Delays.csv")
+                df2 = pd.read_csv("July24Delays.csv")
+                df3 = pd.read_csv("June24Delays.csv")
+                df1 = pd.concat([df1,df2,df3])
+                self.df_flight = df1
+                
+            if self.origin != "Any":
+                self.df_flight = self.df_flight[ self.df_flight['Origin'] == self.origin]
+            if self.airline != "Any":
+                self.df_flight = self.df_flight[ self.df_flight['Airline'] == self.airline]
+            self.destination = destination
+            self.df_flight = self.df_flight[ self.df_flight['Destination'] == self.destination]
+        
+        else:
+            self.destination = destination
+            self.df_flight = self.df_flight[ self.df_flight['Destination'] == self.destination]
+        
+    def input_airline(self, airline):
+        
+        if self.airline != "Any":
+            if tf == 1:
+                df1 = pd.read_csv("Aug24Delays.csv")
+                self.df_flight = df1
+            elif tf == 2:
+                df1 = pd.read_csv("Aug24Delays.csv")
+                df2 = pd.read_csv("July24Delays.csv")
+                df1 = pd.concat([df1,df2])
+                self.df_flight = df1
+            else:
+                df1 = pd.read_csv("Aug24Delays.csv")
+                df2 = pd.read_csv("July24Delays.csv")
+                df3 = pd.read_csv("June24Delays.csv")
+                df1 = pd.concat([df1,df2,df3])
+                self.df_flight = df1
+                
+            if self.destination != "Any":
+                self.df_flight = self.df_flight[ self.df_flight['Origin'] == self.origin]
+            if self.airline != "Any":
+                self.df_flight = self.df_flight[ self.df_flight['Destination'] == self.destination]
+            self.airline = airline
+            self.df_flight = self.df_flight[ self.df_flight['Airline'] == self.airline]
+        
+        else:
+            self.airline = airline
+            self.df_flight = self.df_flight[ self.df_flight['Airline'] == self.airline]
+        
+    def count_return(self):
+        
+        return print("\nNumber of flights:", self.df_flight.shape[0])
+        
+    def print_stats(self):
+        
+        delaylist = self.df_flight['Delay'].tolist()
+        meandelay = round(self.df_flight['Delay'].mean(),1)
+        mediandelay = round(self.df_flight['Delay'].median(),1)
+        
+        greaterlist = []
+        
+        for i in delaylist:
+            if i > 15:
+                greaterlist.append(i)
+        
+        percent15late = len(greaterlist)/len(delaylist)
+        
+        print("\nOf the", self.df_flight.shape[0], "flights,",
+              "\nMean delay:", meandelay, "minutes",
+              "\nMedian delay:", mediandelay, "minutes",
+              "\nOf the flights,", str(round(percent15late*100,1)) + "% were at least 15 minutes late")
+        
+    def plot_hist(self, headsize=40):
+        
+        self.headsize = headsize
+        
+        meandelay = round(self.df_flight['Delay'].mean(),1)
+        
+        dfPlot = self.df_flight[['Delay']].value_counts()
+        dfPlot = dfPlot.head(headsize)
+        dfPlot = dfPlot.reset_index()
+
+        countlist = dfPlot['count'].tolist()
+        countlist = sum(countlist)
+        
+        dfPlot['count'] = dfPlot['count'].apply(lambda x: x / countlist)
+        
+        ptitle = str("Delay distribution of " + self.origin + '-' + self.destination + " with " + self.airline + " flights.")
+        plt.title(ptitle)
+        plt.xlabel("Minutes")
+        plt.ylabel("Percentage")
+        
+        if meandelay > 15:
+            c = 'red'
+        else:
+            c = 'green'
+        
+        plt.bar(dfPlot.iloc[:,0], dfPlot.iloc[:,1], color = c, width=1)
+        
+        plt.show()
+        
+    def __str__(self):
+        return '\n\nOrigin: %s\nDestination: %s\nAirline: %s' % (self.origin, self.destination, self.airline)
